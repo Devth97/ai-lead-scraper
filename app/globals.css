@@ -340,6 +340,59 @@ td a {
 td a:hover {
   text-decoration: underline;
 }
+/* ---------- discovery ---------- */
+.card-accent {
+  border-color: #d8d4fb;
+  background: linear-gradient(180deg, #fbfaff 0%, #ffffff 60%);
+}
+.discover-grid {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 180px;
+}
+.field-narrow {
+  flex: 0 0 110px;
+  min-width: 90px;
+}
+.field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.field input {
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font: inherit;
+  background: #fff;
+  color: var(--ink);
+}
+.field input:focus {
+  outline: none;
+  border-color: var(--indigo);
+  box-shadow: 0 0 0 3px rgba(91, 79, 233, 0.15);
+}
+.disc-status {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.disc-status.ok {
+  color: var(--indigo);
+}
+.disc-status.err {
+  color: var(--red);
+}
+
 .score-badge {
   display: inline-grid;
   place-items: center;

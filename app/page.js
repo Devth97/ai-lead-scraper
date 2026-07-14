@@ -60,6 +60,12 @@ export default function Home() {
   const [webhookUrl, setWebhookUrl] = useState("");
   const [webhookStatus, setWebhookStatus] = useState(null);
   const [sendingWebhook, setSendingWebhook] = useState(false);
+  // discovery
+  const [discIndustry, setDiscIndustry] = useState("Jewellery");
+  const [discLocation, setDiscLocation] = useState("");
+  const [discCount, setDiscCount] = useState(12);
+  const [discovering, setDiscovering] = useState(false);
+  const [discStatus, setDiscStatus] = useState(null);
   const stopRef = useRef(false);
 
   // persist results between runs
@@ -93,17 +99,18 @@ export default function Home() {
     [urlText]
   );
 
-  async function runScrape() {
-    if (urls.length === 0 || running) return;
+  async function runScrape(urlList) {
+    const list = urlList && urlList.length ? urlList : urls;
+    if (list.length === 0 || running) return;
     setRunning(true);
     stopRef.current = false;
     setLog([]);
-    setProgress({ done: 0, total: urls.length, current: urls[0] });
+    setProgress({ done: 0, total: list.length, current: list[0] });
 
-    for (let i = 0; i < urls.length; i++) {
+    for (let i = 0; i < list.length; i++) {
       if (stopRef.current) break;
-      const url = urls[i];
-      setProgress({ done: i, total: urls.length, current: url });
+      const url = list[i];
+      setProgress({ done: i, total: list.length, current: url });
       try {
         const res = await fetch("/api/scrape", {
           method: "POST",
@@ -124,10 +131,43 @@ export default function Home() {
       } catch (e) {
         setLog((prev) => [...prev, { ok: false, msg: `✗ ${url} — ${e.message}` }]);
       }
-      setProgress({ done: i + 1, total: urls.length, current: url });
+      setProgress({ done: i + 1, total: list.length, current: url });
     }
     setRunning(false);
     setProgress((p) => ({ ...p, current: "" }));
+  }
+
+  // Find prospects automatically, then qualify them in one shot — no pasting.
+  async function discoverAndQualify() {
+    if (discovering || running || !discLocation.trim()) return;
+    setDiscovering(true);
+    setDiscStatus({ ok: true, msg: "Searching the web for matching businesses…" });
+    try {
+      const res = await fetch("/api/discover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ industry: discIndustry, location: discLocation, count: discCount }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      const found = (data.results || []).map((r) => r.website);
+      if (found.length === 0) {
+        setDiscStatus({ ok: false, msg: data.note || "No businesses found — try a broader location." });
+        setDiscovering(false);
+        return;
+      }
+      // show what was found in the URL box too, so it's transparent + reusable
+      setUrlText([...new Set(found)].join("\n"));
+      setDiscStatus({
+        ok: true,
+        msg: `Found ${found.length} prospect${found.length === 1 ? "" : "s"} — qualifying now…`,
+      });
+      setDiscovering(false);
+      await runScrape(found);
+    } catch (e) {
+      setDiscStatus({ ok: false, msg: `Discovery failed: ${e.message}` });
+      setDiscovering(false);
+    }
   }
 
   function handleFile(e) {
@@ -222,24 +262,96 @@ export default function Home() {
         <div className="hero">
           <h1>GrowPlus Lead Engine</h1>
           <p>
-            Find brands that need an AI cinematic ad video. Paste prospect websites — the AI
-            extracts contacts, classifies the industry, scores each lead 1–10 on how badly they
-            need a cinematic ad (visual product, marketing spend, weak or missing video), and
-            drafts a concrete ad concept to pitch — then push the hot ones straight into your
+            Find brands that need an AI cinematic ad video. Tell it an industry and a city and it
+            <strong> finds real local businesses for you</strong>, then the AI extracts contacts,
+            classifies the industry, scores each lead 1–10 on how badly they need a cinematic ad,
+            and drafts a concrete ad concept to pitch — then push the hot ones straight into your
             n8n outreach automation.
           </p>
         </div>
 
-        {/* Step 1: URLs */}
-        <div className="card">
+        {/* Step 1: Auto-discover */}
+        <div className="card card-accent">
           <h2>
-            <span className="step-num">1</span> Add prospect websites
+            <span className="step-num">1</span> Find prospects automatically
           </h2>
           <p className="hint">
-            One URL per line (or comma/space separated). You can also upload a .txt / .csv file.
-            Best targets: visual, product-led brands — jewellers, restaurants &amp; packaged food
-            brands, builders, silk &amp; clothing labels, footwear and FMCG — especially ones
-            active on Instagram but with no video content.
+            No pasting needed — pick an industry and type a city or area. It searches the web for
+            real local businesses with their own websites, then qualifies each one below.
+          </p>
+          <div className="discover-grid">
+            <div className="field">
+              <label>Industry</label>
+              <input
+                type="text"
+                list="industry-options"
+                value={discIndustry}
+                onChange={(e) => setDiscIndustry(e.target.value)}
+                placeholder="e.g. Jewellery"
+                disabled={discovering || running}
+              />
+              <datalist id="industry-options">
+                <option value="Jewellery" />
+                <option value="Restaurants & cafes" />
+                <option value="Packaged food brands" />
+                <option value="Real estate builders" />
+                <option value="Silk & saree stores" />
+                <option value="Clothing & fashion brands" />
+                <option value="Footwear brands" />
+                <option value="Salons & spas" />
+              </datalist>
+            </div>
+            <div className="field">
+              <label>City / area</label>
+              <input
+                type="text"
+                value={discLocation}
+                onChange={(e) => setDiscLocation(e.target.value)}
+                placeholder="e.g. Mangalore, Udupi"
+                disabled={discovering || running}
+                onKeyDown={(e) => e.key === "Enter" && discoverAndQualify()}
+              />
+            </div>
+            <div className="field field-narrow">
+              <label>How many</label>
+              <input
+                type="number"
+                min="1"
+                max="25"
+                value={discCount}
+                onChange={(e) => setDiscCount(e.target.value)}
+                disabled={discovering || running}
+              />
+            </div>
+          </div>
+          <div className="row">
+            <button
+              className="btn btn-primary"
+              onClick={discoverAndQualify}
+              disabled={discovering || running || !discLocation.trim() || !discIndustry.trim()}
+            >
+              {discovering ? (
+                <>
+                  <span className="spinner" /> Finding…
+                </>
+              ) : (
+                <>🔎 Find &amp; qualify leads</>
+              )}
+            </button>
+            {discStatus && (
+              <span className={`disc-status ${discStatus.ok ? "ok" : "err"}`}>{discStatus.msg}</span>
+            )}
+          </div>
+        </div>
+
+        {/* Step 2: URLs */}
+        <div className="card">
+          <h2>
+            <span className="step-num">2</span> …or add prospect websites yourself
+          </h2>
+          <p className="hint">
+            Optional — paste URLs (one per line, or comma/space separated) or upload a .txt / .csv
+            file. Discovered prospects also land here so you can review or re-run them.
           </p>
           <textarea
             value={urlText}
@@ -297,7 +409,7 @@ export default function Home() {
         {/* Step 2: Results */}
         <div className="card">
           <h2>
-            <span className="step-num">2</span> Qualified leads
+            <span className="step-num">3</span> Qualified leads
           </h2>
           <p className="hint">
             Sorted by ad-video fit score by default — <strong>8–10 hot</strong>, 5–7 warm, 1–4 cold.
@@ -429,7 +541,7 @@ export default function Home() {
         {/* Step 3: n8n webhook */}
         <div className="card">
           <h2>
-            <span className="step-num">3</span> Push to n8n outreach automation
+            <span className="step-num">4</span> Push to n8n outreach automation
           </h2>
           <p className="hint">
             Paste your n8n Webhook node URL. Each lead is POSTed as JSON with its score and ad
