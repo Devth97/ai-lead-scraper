@@ -21,3 +21,5 @@ scraper/leads.csv
 # misc
 .DS_Store
 *.log
+
+.vercel
