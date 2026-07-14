@@ -12,7 +12,14 @@ const EXTRACTION_SCHEMA = {
     city: { type: ["string", "null"] },
     industry: {
       type: "string",
-      enum: ["Jewellery", "Food & Beverage", "Real Estate", "Clothing & Fashion", "Other"],
+      enum: [
+        "Jewellery",
+        "Food & Beverage",
+        "Real Estate",
+        "Clothing & Fashion",
+        "Consumer Goods",
+        "Other",
+      ],
     },
     instagram: { type: ["string", "null"] },
     lead_score: { type: "integer" },
@@ -34,11 +41,21 @@ const EXTRACTION_SCHEMA = {
   additionalProperties: false,
 };
 
-const SYSTEM_PROMPT = `You qualify sales leads for GrowPlus (growplus.site), an agency based in Mangalore, Karnataka, India whose core offer is AI-BASED CINEMATIC AD VIDEOS for brands — premium, film-quality product/brand ads generated with AI, delivered faster and cheaper than a traditional shoot. Strong fits are visual, product-led brands: jewellery, food & beverage, real estate, clothing/silk/fashion, and any consumer brand that markets on Instagram.
+const SYSTEM_PROMPT = `You qualify sales leads for Grow+ / GrowPlus (growplus.site, @grow.plus_), an agency based in Mangalore, Karnataka, India whose core offer is AI-BASED CINEMATIC AD VIDEOS for brands — "AI Based Ads | Scale Smarter. Grow Faster." Premium, film-quality product/brand ads generated with AI, delivered faster and cheaper than a traditional shoot.
+
+Grow+ portfolio proof points (use these to anchor pitches):
+- FMCG/snack product ads: flavor-burst chip ads for Popular (Tomato, Mirchi Masala, Cream & Onion) with crunchy macro product shots
+- Footwear/lifestyle ads: CAMPUS Chrono sneaker launch reel
+- Menswear/watch ads: sleek "modern gentleman" product films
+- Silk & fashion brand films: Thamanvi Silks saree collection reels
+- Restaurant/food films: The Good Spoon dish showcase
+- Emotional cinematic AI short films (storytelling range)
+
+Strong fits are visual, product-led brands: jewellery, food & beverage (restaurants AND packaged foods), real estate, clothing/silk/fashion, footwear, watches, FMCG and other consumer goods — any brand that markets on Instagram.
 
 From the website text of a prospective client business, extract:
 - business_name, contact_name (a person, if mentioned), email, phone, whatsapp (number or wa.me link if present), website, city
-- industry: classify into Jewellery / Food & Beverage / Real Estate / Clothing & Fashion / Other
+- industry: classify into Jewellery / Food & Beverage / Real Estate / Clothing & Fashion / Consumer Goods / Other
 - instagram: their Instagram profile URL if linked
 - lead_score (1-10) for how much this brand needs a cinematic AI ad video:
   * +3 if their product is inherently visual (jewellery, food, property, fashion, lifestyle/consumer goods)
@@ -47,7 +64,7 @@ From the website text of a prospective client business, extract:
   * +1-3 if their visual content looks weak or absent: no video, stock-looking or thin imagery, text-heavy pages, outdated design — the before/after of a cinematic ad is dramatic
   * +1 if located in Karnataka or South India (Mangalore, Udupi, Bengaluru, Mysuru, etc.)
   * Cap at 10, floor at 1. A non-visual B2B service with no contact info scores 1-2.
-- pitch_angle: ONE short sentence proposing a concrete cinematic AI ad concept for THIS brand, referencing their actual products or positioning (e.g. "Pitch a 20-second cinematic ad: slow-motion macro shots of their bridal gold collection with a festive Diwali storyline." or "Pitch an AI food film: steam rising off their signature ghee roast in dramatic lighting — their site has zero video."). null only if the page has no usable signal.
+- pitch_angle: ONE or TWO short sentences proposing a concrete cinematic AI ad concept for THIS brand, referencing their actual products or positioning, and when a portfolio piece matches, name it as proof to attach (e.g. "Pitch a 20-second cinematic ad: slow-motion macro shots of their bridal gold collection with a festive Diwali storyline." or "Pitch a flavor-burst snack ad like the Popular chips reels — their masala peanut range has zero video." or "Pitch a saree collection film like the Thamanvi Silks reels — their catalogue is static photos only."). null only if the page has no usable signal.
 
 Use null for anything not found in the text. Never invent contact details.`;
 

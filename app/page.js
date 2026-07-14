@@ -214,7 +214,7 @@ export default function Home() {
           <div className="logo-text">
             Grow<span>Plus</span> · Lead Engine
           </div>
-          <div className="topbar-tag">AI cinematic ad videos · growplus.site</div>
+          <div className="topbar-tag">AI Based Ads · Scale Smarter. Grow Faster.</div>
         </div>
       </div>
 
@@ -237,9 +237,9 @@ export default function Home() {
           </h2>
           <p className="hint">
             One URL per line (or comma/space separated). You can also upload a .txt / .csv file.
-            Best targets: visual, product-led brands — jewellers, restaurants &amp; food brands,
-            builders, silk &amp; clothing labels — especially ones active on Instagram but with no
-            video content.
+            Best targets: visual, product-led brands — jewellers, restaurants &amp; packaged food
+            brands, builders, silk &amp; clothing labels, footwear and FMCG — especially ones
+            active on Instagram but with no video content.
           </p>
           <textarea
             value={urlText}
@@ -301,8 +301,9 @@ export default function Home() {
           </h2>
           <p className="hint">
             Sorted by ad-video fit score by default — <strong>8–10 hot</strong>, 5–7 warm, 1–4 cold.
-            The pitch angle is a ready-made cinematic ad concept for that brand. Click any column
-            header to re-sort. Results persist in your browser between runs.
+            The pitch angle is a ready-made cinematic ad concept for that brand, with a matching
+            Grow+ portfolio reel to attach as proof where one fits. Click any column header to
+            re-sort. Results persist in your browser between runs.
           </p>
           <div className="table-toolbar">
             <input
@@ -467,6 +468,10 @@ export default function Home() {
           Built for{" "}
           <a href="https://growplus.site" target="_blank" rel="noreferrer">
             growplus.site
+          </a>{" "}
+          ·{" "}
+          <a href="https://www.instagram.com/grow.plus_/" target="_blank" rel="noreferrer">
+            @grow.plus_
           </a>{" "}
           · AI cinematic ad videos for brands ·{" "}
           <a href="https://github.com/Devth97/ai-lead-scraper" target="_blank" rel="noreferrer">

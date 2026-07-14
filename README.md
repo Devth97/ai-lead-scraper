@@ -2,15 +2,19 @@
 
 AI-powered lead scraper + outreach automation dashboard, built from the
 **"Complete Guide: AI Lead Scraper + Automation Setup"** and optimised for
-finding clients for **[growplus.site](https://growplus.site)** — a Mangalore
-agency creating **AI-based cinematic ad videos for brands**.
+finding clients for **[growplus.site](https://growplus.site)**
+([@grow.plus_](https://www.instagram.com/grow.plus_/)) — a Mangalore agency
+creating **AI-based cinematic ad videos for brands** (*AI Based Ads | Scale
+Smarter. Grow Faster.*).
 
 Paste prospect website URLs → an LLM (gpt-4o-mini) reads each page and
 extracts **business name, contact, email, phone, WhatsApp, city, Instagram**,
 classifies the **industry**, assigns a **1–10 lead score** for how much that
 brand needs a cinematic ad video (visual product, marketing investment,
-reachability, weak or missing video content) and writes a one-line
-**pitch angle** — a concrete cinematic ad concept for that specific brand.
+reachability, weak or missing video content) and writes a
+**pitch angle** — a concrete cinematic ad concept for that specific brand,
+naming a matching Grow+ portfolio reel (FMCG snack ads, footwear launches,
+saree collection films, restaurant food films) as proof where one fits.
 Sort, filter by industry, export CSV, or push leads straight to an
 **n8n webhook** that drives WhatsApp / email / AI-calling outreach.
 
