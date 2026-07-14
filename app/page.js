@@ -3,12 +3,31 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const COLUMNS = [
-  ["business_name", "Business Name"],
-  ["contact_name", "Contact Name"],
+  ["business_name", "Business"],
+  ["industry", "Industry"],
+  ["lead_score", "Score"],
   ["email", "Email"],
   ["phone", "Phone"],
-  ["website", "Website"],
+  ["whatsapp", "WhatsApp"],
   ["city", "City"],
+  ["website", "Website"],
+  ["pitch_angle", "Pitch Angle"],
+];
+
+// CSV keeps every field, including ones not shown as table columns
+const CSV_FIELDS = [
+  "business_name",
+  "contact_name",
+  "email",
+  "phone",
+  "whatsapp",
+  "website",
+  "city",
+  "industry",
+  "instagram",
+  "lead_score",
+  "pitch_angle",
+  "scraped_at",
 ];
 
 const STORAGE_KEY = "ai-lead-scraper:leads";
@@ -18,9 +37,15 @@ function toCsv(rows) {
     const s = v == null ? "" : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  const header = COLUMNS.map(([k]) => k).join(",");
-  const body = rows.map((r) => COLUMNS.map(([k]) => esc(r[k])).join(",")).join("\n");
+  const header = CSV_FIELDS.join(",");
+  const body = rows.map((r) => CSV_FIELDS.map((k) => esc(r[k])).join(",")).join("\n");
   return header + "\n" + body;
+}
+
+function scoreClass(score) {
+  if (score >= 8) return "score-hot";
+  if (score >= 5) return "score-warm";
+  return "score-cold";
 }
 
 export default function Home() {
@@ -30,7 +55,8 @@ export default function Home() {
   const [progress, setProgress] = useState({ done: 0, total: 0, current: "" });
   const [log, setLog] = useState([]);
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState({ key: null, dir: 1 });
+  const [industryFilter, setIndustryFilter] = useState("All");
+  const [sort, setSort] = useState({ key: "lead_score", dir: -1 });
   const [webhookUrl, setWebhookUrl] = useState("");
   const [webhookStatus, setWebhookStatus] = useState(null);
   const [sendingWebhook, setSendingWebhook] = useState(false);
@@ -91,7 +117,10 @@ export default function Home() {
           const rest = prev.filter((l) => l.website !== lead.website);
           return [lead, ...rest];
         });
-        setLog((prev) => [...prev, { ok: true, msg: `✓ ${url} — ${lead.business_name || "extracted"}` }]);
+        setLog((prev) => [
+          ...prev,
+          { ok: true, msg: `✓ ${url} — ${lead.business_name || "extracted"} (score ${lead.lead_score}/10)` },
+        ]);
       } catch (e) {
         setLog((prev) => [...prev, { ok: false, msg: `✗ ${url} — ${e.message}` }]);
       }
@@ -110,13 +139,23 @@ export default function Home() {
     e.target.value = "";
   }
 
+  const industries = useMemo(() => {
+    const set = new Set(leads.map((l) => l.industry).filter(Boolean));
+    return ["All", ...set];
+  }, [leads]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    let rows = q
-      ? leads.filter((l) => COLUMNS.some(([k]) => String(l[k] ?? "").toLowerCase().includes(q)))
-      : [...leads];
+    let rows = leads.filter((l) => {
+      if (industryFilter !== "All" && l.industry !== industryFilter) return false;
+      if (!q) return true;
+      return CSV_FIELDS.some((k) => String(l[k] ?? "").toLowerCase().includes(q));
+    });
     if (sort.key) {
       rows.sort((a, b) => {
+        if (sort.key === "lead_score") {
+          return ((a.lead_score ?? 0) - (b.lead_score ?? 0)) * sort.dir;
+        }
         const av = String(a[sort.key] ?? "").toLowerCase();
         const bv = String(b[sort.key] ?? "").toLowerCase();
         if (av === bv) return 0;
@@ -126,17 +165,17 @@ export default function Home() {
       });
     }
     return rows;
-  }, [leads, search, sort]);
+  }, [leads, search, sort, industryFilter]);
 
   function toggleSort(key) {
-    setSort((s) => (s.key === key ? { key, dir: -s.dir } : { key, dir: 1 }));
+    setSort((s) => (s.key === key ? { key, dir: -s.dir } : { key, dir: key === "lead_score" ? -1 : 1 }));
   }
 
   function exportCsv() {
     const blob = new Blob([toCsv(filtered)], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "leads.csv";
+    a.download = "growplus-leads.csv";
     a.click();
     URL.revokeObjectURL(a.href);
   }
@@ -171,34 +210,39 @@ export default function Home() {
     <>
       <div className="topbar">
         <div className="topbar-inner">
-          <div className="logo-mark">AT</div>
+          <div className="logo-mark">G+</div>
           <div className="logo-text">
-            AI <span>Trity</span> · Lead Scraper
+            Grow<span>Plus</span> · Lead Engine
           </div>
-          <div className="topbar-tag">gpt-4o-mini powered</div>
+          <div className="topbar-tag">AI-qualified leads for growplus.site</div>
         </div>
       </div>
 
       <div className="container">
         <div className="hero">
-          <h1>AI Lead Scraper</h1>
+          <h1>GrowPlus Lead Engine</h1>
           <p>
-            Paste website URLs below. The AI reads each page and extracts business name, contact,
-            email, phone and city — no CSS selectors needed. Export as CSV or push straight into
-            your n8n outreach automation.
+            Paste websites of jewellery stores, F&amp;B brands, real estate firms or fashion
+            labels. The AI extracts contacts, classifies the industry, scores each lead 1–10 for
+            GrowPlus fit, and suggests which service to pitch first — then push the hot ones
+            straight into your n8n outreach automation.
           </p>
         </div>
 
         {/* Step 1: URLs */}
         <div className="card">
           <h2>
-            <span className="step-num">1</span> Add website URLs
+            <span className="step-num">1</span> Add prospect websites
           </h2>
-          <p className="hint">One URL per line (or comma/space separated). You can also upload a .txt / .csv file.</p>
+          <p className="hint">
+            One URL per line (or comma/space separated). You can also upload a .txt / .csv file.
+            Best targets: jewellers, cafes &amp; restaurants, builders, silk &amp; clothing brands —
+            especially around Mangalore, Udupi and Bengaluru.
+          </p>
           <textarea
             value={urlText}
             onChange={(e) => setUrlText(e.target.value)}
-            placeholder={"https://www.kohinoorpropertystudio.in/\nhttps://shivaproperty.in/"}
+            placeholder={"https://some-jeweller-in-mangalore.in/\nhttps://some-cafe-in-udupi.com/\nhttps://some-builder-in-bengaluru.in/"}
             disabled={running}
           />
           <div className="row">
@@ -251,9 +295,12 @@ export default function Home() {
         {/* Step 2: Results */}
         <div className="card">
           <h2>
-            <span className="step-num">2</span> Leads
+            <span className="step-num">2</span> Qualified leads
           </h2>
-          <p className="hint">Click a column header to sort. Results persist in your browser between runs.</p>
+          <p className="hint">
+            Sorted by GrowPlus fit score by default — <strong>8–10 hot</strong>, 5–7 warm, 1–4 cold.
+            Click any column header to re-sort. Results persist in your browser between runs.
+          </p>
           <div className="table-toolbar">
             <input
               type="text"
@@ -261,6 +308,19 @@ export default function Home() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            {industries.length > 2 && (
+              <select
+                className="industry-select"
+                value={industryFilter}
+                onChange={(e) => setIndustryFilter(e.target.value)}
+              >
+                {industries.map((ind) => (
+                  <option key={ind} value={ind}>
+                    {ind === "All" ? "All industries" : ind}
+                  </option>
+                ))}
+              </select>
+            )}
             <span className="count-pill">
               {filtered.length} lead{filtered.length === 1 ? "" : "s"}
             </span>
@@ -283,8 +343,8 @@ export default function Home() {
               <div className="empty-state">
                 <div className="big">🎯</div>
                 {leads.length === 0
-                  ? "No leads yet — add URLs above and hit Run Scrape."
-                  : "No leads match your search."}
+                  ? "No leads yet — add prospect URLs above and hit Run Scrape."
+                  : "No leads match your filters."}
               </div>
             ) : (
               <table>
@@ -301,14 +361,49 @@ export default function Home() {
                 <tbody>
                   {filtered.map((l, i) => (
                     <tr key={(l.website || "") + i}>
-                      <td>{l.business_name || <span className="muted">—</span>}</td>
-                      <td>{l.contact_name || <span className="muted">—</span>}</td>
+                      <td>
+                        <strong>{l.business_name || <span className="muted">—</span>}</strong>
+                        {l.contact_name && <div className="sub">{l.contact_name}</div>}
+                        {l.instagram && (
+                          <div className="sub">
+                            <a href={l.instagram} target="_blank" rel="noreferrer">
+                              Instagram ↗
+                            </a>
+                          </div>
+                        )}
+                      </td>
+                      <td>{l.industry || <span className="muted">—</span>}</td>
+                      <td>
+                        {l.lead_score != null ? (
+                          <span className={`score-badge ${scoreClass(l.lead_score)}`}>{l.lead_score}</span>
+                        ) : (
+                          <span className="muted">—</span>
+                        )}
+                      </td>
                       <td>
                         {l.email ? <a href={`mailto:${l.email}`}>{l.email}</a> : <span className="muted">—</span>}
                       </td>
                       <td>
                         {l.phone ? <a href={`tel:${l.phone}`}>{l.phone}</a> : <span className="muted">—</span>}
                       </td>
+                      <td>
+                        {l.whatsapp ? (
+                          <a
+                            href={
+                              /^https?:/i.test(l.whatsapp)
+                                ? l.whatsapp
+                                : `https://wa.me/${String(l.whatsapp).replace(/[^\d]/g, "")}`
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {String(l.whatsapp).replace(/^https?:\/\/(wa\.me|api\.whatsapp\.com)\//i, "")}
+                          </a>
+                        ) : (
+                          <span className="muted">—</span>
+                        )}
+                      </td>
+                      <td>{l.city || <span className="muted">—</span>}</td>
                       <td>
                         {l.website ? (
                           <a href={l.website} target="_blank" rel="noreferrer">
@@ -318,7 +413,7 @@ export default function Home() {
                           <span className="muted">—</span>
                         )}
                       </td>
-                      <td>{l.city || <span className="muted">—</span>}</td>
+                      <td className="pitch-cell">{l.pitch_angle || <span className="muted">—</span>}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -333,8 +428,10 @@ export default function Home() {
             <span className="step-num">3</span> Push to n8n outreach automation
           </h2>
           <p className="hint">
-            Paste your n8n Webhook node URL. Each lead is POSTed as JSON — your workflow branches to
-            WhatsApp (Unipile), email (SendGrid) or an AI call (Vapi), then logs to CRM.
+            Paste your n8n Webhook node URL. Each lead is POSTed as JSON with its score and pitch
+            angle, so your workflow can prioritise hot leads and branch to WhatsApp (Unipile),
+            email (SendGrid) or an AI call (Vapi), then log to CRM. Tip: filter to one industry
+            first to send a targeted batch.
           </p>
           <div className="row" style={{ marginTop: 0 }}>
             <input
@@ -364,9 +461,13 @@ export default function Home() {
         </div>
 
         <footer>
-          AI Trity · Lead scraping + outreach automation ·{" "}
-          <a href="https://github.com/ScrapeGraphAI/Scrapegraph-ai" target="_blank" rel="noreferrer">
-            local Python scraper included in repo
+          Built for{" "}
+          <a href="https://growplus.site" target="_blank" rel="noreferrer">
+            growplus.site
+          </a>{" "}
+          · AI automation &amp; creative agency, Mangalore ·{" "}
+          <a href="https://github.com/Devth97/ai-lead-scraper" target="_blank" rel="noreferrer">
+            source
           </a>
         </footer>
       </div>

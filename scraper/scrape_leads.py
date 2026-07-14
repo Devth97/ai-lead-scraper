@@ -31,14 +31,34 @@ N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "").strip()  # optional
 if not OPENAI_API_KEY:
     raise SystemExit("Missing OPENAI_API_KEY - create a .env file (see .env.example)")
 
-FIELDS = ["business_name", "contact_name", "email", "phone", "website", "city"]
+FIELDS = [
+    "business_name",
+    "contact_name",
+    "email",
+    "phone",
+    "whatsapp",
+    "website",
+    "city",
+    "industry",
+    "instagram",
+    "lead_score",
+    "pitch_angle",
+]
 
 PROMPT = (
-    "Extract the following information about this business: "
-    "business name, contact person name, email address, phone number, "
-    "website URL, and the city it operates in. "
-    "Return JSON with keys: business_name, contact_name, email, phone, website, city. "
-    "Use null for anything not found. Never invent values."
+    "You qualify sales leads for GrowPlus (growplus.site), an AI automation & creative "
+    "agency in Mangalore, Karnataka serving jewellery, food & beverage, real estate and "
+    "clothing/fashion brands. Services: AI automation, website development, Reels/content "
+    "creation, brand storytelling, social media management, photography & videography. "
+    "Extract: business name, contact person name, email, phone, WhatsApp number, website "
+    "URL, city, industry (Jewellery / Food & Beverage / Real Estate / Clothing & Fashion / "
+    "Other), and Instagram URL if linked. Then add lead_score (1-10 fit for GrowPlus: "
+    "target industry +3, Karnataka/South India +2, reachable contact +2, visible gaps like "
+    "no social links or weak content +1-3) and pitch_angle (one sentence: which GrowPlus "
+    "service to pitch first and why, citing something specific from their site). "
+    "Return JSON with keys: business_name, contact_name, email, phone, whatsapp, website, "
+    "city, industry, instagram, lead_score, pitch_angle. "
+    "Use null for anything not found. Never invent contact details."
 )
 
 graph_config = {

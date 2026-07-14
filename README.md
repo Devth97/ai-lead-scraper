@@ -1,12 +1,19 @@
-# AI Lead Scraper
+# AI Lead Scraper — GrowPlus Lead Engine
 
 AI-powered lead scraper + outreach automation dashboard, built from the
-**"Complete Guide: AI Lead Scraper + Automation Setup"**.
+**"Complete Guide: AI Lead Scraper + Automation Setup"** and optimised for
+finding clients for **[growplus.site](https://growplus.site)** — an AI
+automation & creative agency in Mangalore serving jewellery, F&B, real
+estate and clothing/fashion brands.
 
-Paste website URLs → an LLM (gpt-4o-mini) reads each page and extracts
-**business name, contact name, email, phone, website, city** — no CSS
-selectors needed. Sort, search, export as CSV, or push leads straight to an
-**n8n webhook** that drives WhatsApp / email / AI-calling outreach.
+Paste prospect website URLs → an LLM (gpt-4o-mini) reads each page and
+extracts **business name, contact, email, phone, WhatsApp, city, Instagram**,
+classifies the **industry**, assigns a **1–10 lead score** for GrowPlus fit
+(target industry, Karnataka/South India location, reachability, visible
+service gaps) and writes a one-line **pitch angle** (which GrowPlus service
+to lead with and why). Sort, filter by industry, export CSV, or push leads
+straight to an **n8n webhook** that drives WhatsApp / email / AI-calling
+outreach.
 
 ## What's in this repo
 
@@ -64,8 +71,13 @@ The dashboard's **step 3** POSTs each lead as JSON to your n8n Webhook node:
   "contact_name": null,
   "email": "info@example.com",
   "phone": "+91 98765 43210",
+  "whatsapp": "+91 98765 43210",
   "website": "https://www.kohinoorpropertystudio.in/",
-  "city": "Bengaluru"
+  "city": "Bengaluru",
+  "industry": "Real Estate",
+  "instagram": "https://instagram.com/kohinoorproperty",
+  "lead_score": 8,
+  "pitch_angle": "Lead with website development — their listings have no photo galleries or enquiry forms."
 }
 ```
 

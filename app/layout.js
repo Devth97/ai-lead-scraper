@@ -1,9 +1,9 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "AI Lead Scraper — AI Trity",
+  title: "GrowPlus Lead Engine — AI Lead Scraper",
   description:
-    "Paste website URLs, extract business leads with AI, and push them to your n8n outreach automation.",
+    "AI-qualified leads for growplus.site: scrape prospect websites, score them for GrowPlus fit, and push hot leads to n8n outreach automation.",
 };
 
 export default function RootLayout({ children }) {

@@ -7,12 +7,48 @@ const EXTRACTION_SCHEMA = {
     contact_name: { type: ["string", "null"] },
     email: { type: ["string", "null"] },
     phone: { type: ["string", "null"] },
+    whatsapp: { type: ["string", "null"] },
     website: { type: ["string", "null"] },
     city: { type: ["string", "null"] },
+    industry: {
+      type: "string",
+      enum: ["Jewellery", "Food & Beverage", "Real Estate", "Clothing & Fashion", "Other"],
+    },
+    instagram: { type: ["string", "null"] },
+    lead_score: { type: "integer" },
+    pitch_angle: { type: ["string", "null"] },
   },
-  required: ["business_name", "contact_name", "email", "phone", "website", "city"],
+  required: [
+    "business_name",
+    "contact_name",
+    "email",
+    "phone",
+    "whatsapp",
+    "website",
+    "city",
+    "industry",
+    "instagram",
+    "lead_score",
+    "pitch_angle",
+  ],
   additionalProperties: false,
 };
+
+const SYSTEM_PROMPT = `You qualify sales leads for GrowPlus (growplus.site), an AI automation & creative agency based in Mangalore, Karnataka, India. GrowPlus serves jewellery stores, food & beverage brands, real estate firms, and clothing/silk/fashion brands. Its services: AI automation (custom agents & LLM workflows), website development, short-form content creation (Reels/videos), brand storytelling, social media management, and product/property photography & videography.
+
+From the website text of a prospective client business, extract:
+- business_name, contact_name (a person, if mentioned), email, phone, whatsapp (number or wa.me link if present), website, city
+- industry: classify into Jewellery / Food & Beverage / Real Estate / Clothing & Fashion / Other
+- instagram: their Instagram profile URL if linked
+- lead_score (1-10) for GrowPlus fit:
+  * +3 if in a GrowPlus target industry (jewellery, F&B, real estate, clothing/fashion)
+  * +2 if located in Karnataka or South India (Mangalore, Udupi, Bengaluru, Mysuru, etc.)
+  * +2 if reachable (has phone/WhatsApp or email)
+  * +1-3 for visible service gaps GrowPlus can fix: no Instagram/social links, no online store, thin/outdated content, no professional product photos
+  * Cap at 10, floor at 1. A non-target industry with no contact info scores 1-2.
+- pitch_angle: ONE short sentence naming the single most compelling GrowPlus service for this business and why, referencing something specific from their site (e.g. "Lead with product photography + Reels — their gold jewellery catalogue has no lifestyle imagery."). null only if the page has no usable signal.
+
+Use null for anything not found in the text. Never invent contact details.`;
 
 function htmlToText(html) {
   return html
@@ -30,11 +66,15 @@ function htmlToText(html) {
     .trim();
 }
 
-// mailto:/tel: links often hold contact info that disappears when tags are stripped
+// mailto:/tel:/wa.me/instagram links often hold contact + social info
+// that disappears when tags are stripped
 function extractContactHints(html) {
   const hints = new Set();
-  for (const m of html.matchAll(/(?:mailto|tel):([^"'\s>?]+)/gi)) hints.add(m[1]);
-  return [...hints].slice(0, 20).join(", ");
+  for (const m of html.matchAll(/(?:mailto|tel):([^"'\s>?]+)/gi)) hints.add(m[0]);
+  for (const m of html.matchAll(/https?:\/\/(?:wa\.me|api\.whatsapp\.com)\/[^"'\s>]+/gi)) hints.add(m[0]);
+  for (const m of html.matchAll(/https?:\/\/(?:www\.)?instagram\.com\/[a-zA-Z0-9_.]+/gi)) hints.add(m[0]);
+  for (const m of html.matchAll(/https?:\/\/(?:www\.)?facebook\.com\/[a-zA-Z0-9_.]+/gi)) hints.add(m[0]);
+  return [...hints].slice(0, 25).join(", ");
 }
 
 export async function POST(request) {
@@ -83,7 +123,7 @@ export async function POST(request) {
   const text = htmlToText(html).slice(0, 14000);
   const contactHints = extractContactHints(html);
 
-  // 2. Extract structured lead data with gpt-4o-mini
+  // 2. Extract + qualify with gpt-4o-mini
   try {
     const aiRes = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -96,17 +136,13 @@ export async function POST(request) {
         temperature: 0,
         response_format: {
           type: "json_schema",
-          json_schema: { name: "lead", strict: true, schema: EXTRACTION_SCHEMA },
+          json_schema: { name: "growplus_lead", strict: true, schema: EXTRACTION_SCHEMA },
         },
         messages: [
-          {
-            role: "system",
-            content:
-              "You extract business lead information from website text. Return the business name, a contact person's name if mentioned, email address, phone number, and the city the business operates in. Use null for anything not found in the text. Never invent values.",
-          },
+          { role: "system", content: SYSTEM_PROMPT },
           {
             role: "user",
-            content: `Website URL: ${url}\n\nContact links found in page markup: ${contactHints || "none"}\n\nPage text:\n${text}`,
+            content: `Website URL: ${url}\n\nContact & social links found in page markup: ${contactHints || "none"}\n\nPage text:\n${text}`,
           },
         ],
       }),
@@ -124,6 +160,7 @@ export async function POST(request) {
     const data = await aiRes.json();
     const lead = JSON.parse(data.choices[0].message.content);
     lead.website = lead.website || url;
+    lead.lead_score = Math.min(10, Math.max(1, lead.lead_score || 1));
     return Response.json({ lead });
   } catch (e) {
     return Response.json({ error: `Extraction failed: ${e.message}` }, { status: 502 });

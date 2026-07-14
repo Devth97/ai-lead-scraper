@@ -340,6 +340,53 @@ td a {
 td a:hover {
   text-decoration: underline;
 }
+.score-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12.5px;
+}
+.score-hot {
+  background: #dcfce7;
+  color: #15803d;
+}
+.score-warm {
+  background: #fef3c7;
+  color: #b45309;
+}
+.score-cold {
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+}
+.sub {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+.pitch-cell {
+  min-width: 240px;
+  max-width: 340px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.industry-select {
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font: inherit;
+  background: var(--bg-soft);
+  color: var(--ink);
+  cursor: pointer;
+}
+.industry-select:focus {
+  outline: none;
+  border-color: var(--indigo);
+}
 .empty-state {
   text-align: center;
   padding: 48px 20px;
