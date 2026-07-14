@@ -214,7 +214,7 @@ export default function Home() {
           <div className="logo-text">
             Grow<span>Plus</span> · Lead Engine
           </div>
-          <div className="topbar-tag">AI-qualified leads for growplus.site</div>
+          <div className="topbar-tag">AI cinematic ad videos · growplus.site</div>
         </div>
       </div>
 
@@ -222,10 +222,11 @@ export default function Home() {
         <div className="hero">
           <h1>GrowPlus Lead Engine</h1>
           <p>
-            Paste websites of jewellery stores, F&amp;B brands, real estate firms or fashion
-            labels. The AI extracts contacts, classifies the industry, scores each lead 1–10 for
-            GrowPlus fit, and suggests which service to pitch first — then push the hot ones
-            straight into your n8n outreach automation.
+            Find brands that need an AI cinematic ad video. Paste prospect websites — the AI
+            extracts contacts, classifies the industry, scores each lead 1–10 on how badly they
+            need a cinematic ad (visual product, marketing spend, weak or missing video), and
+            drafts a concrete ad concept to pitch — then push the hot ones straight into your
+            n8n outreach automation.
           </p>
         </div>
 
@@ -236,8 +237,9 @@ export default function Home() {
           </h2>
           <p className="hint">
             One URL per line (or comma/space separated). You can also upload a .txt / .csv file.
-            Best targets: jewellers, cafes &amp; restaurants, builders, silk &amp; clothing brands —
-            especially around Mangalore, Udupi and Bengaluru.
+            Best targets: visual, product-led brands — jewellers, restaurants &amp; food brands,
+            builders, silk &amp; clothing labels — especially ones active on Instagram but with no
+            video content.
           </p>
           <textarea
             value={urlText}
@@ -298,8 +300,9 @@ export default function Home() {
             <span className="step-num">2</span> Qualified leads
           </h2>
           <p className="hint">
-            Sorted by GrowPlus fit score by default — <strong>8–10 hot</strong>, 5–7 warm, 1–4 cold.
-            Click any column header to re-sort. Results persist in your browser between runs.
+            Sorted by ad-video fit score by default — <strong>8–10 hot</strong>, 5–7 warm, 1–4 cold.
+            The pitch angle is a ready-made cinematic ad concept for that brand. Click any column
+            header to re-sort. Results persist in your browser between runs.
           </p>
           <div className="table-toolbar">
             <input
@@ -428,10 +431,10 @@ export default function Home() {
             <span className="step-num">3</span> Push to n8n outreach automation
           </h2>
           <p className="hint">
-            Paste your n8n Webhook node URL. Each lead is POSTed as JSON with its score and pitch
-            angle, so your workflow can prioritise hot leads and branch to WhatsApp (Unipile),
-            email (SendGrid) or an AI call (Vapi), then log to CRM. Tip: filter to one industry
-            first to send a targeted batch.
+            Paste your n8n Webhook node URL. Each lead is POSTed as JSON with its score and ad
+            concept, so your workflow can prioritise hot leads and open with the pitch angle in
+            the WhatsApp (Unipile) or email (SendGrid) message, or brief the AI caller (Vapi) —
+            then log to CRM. Tip: filter to one industry first to send a targeted batch.
           </p>
           <div className="row" style={{ marginTop: 0 }}>
             <input
@@ -465,7 +468,7 @@ export default function Home() {
           <a href="https://growplus.site" target="_blank" rel="noreferrer">
             growplus.site
           </a>{" "}
-          · AI automation &amp; creative agency, Mangalore ·{" "}
+          · AI cinematic ad videos for brands ·{" "}
           <a href="https://github.com/Devth97/ai-lead-scraper" target="_blank" rel="noreferrer">
             source
           </a>

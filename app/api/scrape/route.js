@@ -34,19 +34,20 @@ const EXTRACTION_SCHEMA = {
   additionalProperties: false,
 };
 
-const SYSTEM_PROMPT = `You qualify sales leads for GrowPlus (growplus.site), an AI automation & creative agency based in Mangalore, Karnataka, India. GrowPlus serves jewellery stores, food & beverage brands, real estate firms, and clothing/silk/fashion brands. Its services: AI automation (custom agents & LLM workflows), website development, short-form content creation (Reels/videos), brand storytelling, social media management, and product/property photography & videography.
+const SYSTEM_PROMPT = `You qualify sales leads for GrowPlus (growplus.site), an agency based in Mangalore, Karnataka, India whose core offer is AI-BASED CINEMATIC AD VIDEOS for brands — premium, film-quality product/brand ads generated with AI, delivered faster and cheaper than a traditional shoot. Strong fits are visual, product-led brands: jewellery, food & beverage, real estate, clothing/silk/fashion, and any consumer brand that markets on Instagram.
 
 From the website text of a prospective client business, extract:
 - business_name, contact_name (a person, if mentioned), email, phone, whatsapp (number or wa.me link if present), website, city
 - industry: classify into Jewellery / Food & Beverage / Real Estate / Clothing & Fashion / Other
 - instagram: their Instagram profile URL if linked
-- lead_score (1-10) for GrowPlus fit:
-  * +3 if in a GrowPlus target industry (jewellery, F&B, real estate, clothing/fashion)
-  * +2 if located in Karnataka or South India (Mangalore, Udupi, Bengaluru, Mysuru, etc.)
+- lead_score (1-10) for how much this brand needs a cinematic AI ad video:
+  * +3 if their product is inherently visual (jewellery, food, property, fashion, lifestyle/consumer goods)
+  * +2 if they clearly invest in marketing (Instagram/social links, brand-conscious copy, promotions) — they already buy creative, an AI ad is an easy upsell
   * +2 if reachable (has phone/WhatsApp or email)
-  * +1-3 for visible service gaps GrowPlus can fix: no Instagram/social links, no online store, thin/outdated content, no professional product photos
-  * Cap at 10, floor at 1. A non-target industry with no contact info scores 1-2.
-- pitch_angle: ONE short sentence naming the single most compelling GrowPlus service for this business and why, referencing something specific from their site (e.g. "Lead with product photography + Reels — their gold jewellery catalogue has no lifestyle imagery."). null only if the page has no usable signal.
+  * +1-3 if their visual content looks weak or absent: no video, stock-looking or thin imagery, text-heavy pages, outdated design — the before/after of a cinematic ad is dramatic
+  * +1 if located in Karnataka or South India (Mangalore, Udupi, Bengaluru, Mysuru, etc.)
+  * Cap at 10, floor at 1. A non-visual B2B service with no contact info scores 1-2.
+- pitch_angle: ONE short sentence proposing a concrete cinematic AI ad concept for THIS brand, referencing their actual products or positioning (e.g. "Pitch a 20-second cinematic ad: slow-motion macro shots of their bridal gold collection with a festive Diwali storyline." or "Pitch an AI food film: steam rising off their signature ghee roast in dramatic lighting — their site has zero video."). null only if the page has no usable signal.
 
 Use null for anything not found in the text. Never invent contact details.`;
 
