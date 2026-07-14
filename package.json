@@ -1,0 +1,16 @@
+{
+  "name": "ai-lead-scraper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered lead scraper dashboard - extracts business leads from any website URL using gpt-4o-mini, with n8n webhook outreach integration",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^15.3.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}

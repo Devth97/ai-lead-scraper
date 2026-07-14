@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+
+# env - never commit API keys
+.env
+.env.local
+.env*.local
+
+# vercel
+.vercel
+
+# python (local scraper)
+scraper/venv/
+scraper/__pycache__/
+scraper/leads.csv
+
+# misc
+.DS_Store
+*.log
